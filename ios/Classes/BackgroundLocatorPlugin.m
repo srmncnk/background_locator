@@ -242,7 +242,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
         
     if (@available(iOS 17.0, *)) {
         if (_backgroundActivitySession == nil) {
-            _backgroundActivitySession = [CLBackgroundActivitySession new];
+            _backgroundActivitySession = [[CLBackgroundActivitySession alloc] init];
             NSLog(@"BackgroundLocator: started CLBackgroundActivitySession");
         }
     }
