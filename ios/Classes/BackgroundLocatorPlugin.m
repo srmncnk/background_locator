@@ -242,11 +242,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
         
     if (@available(iOS 17.0, *)) {
         if (_backgroundActivitySession == nil) {
-            Class cls = NSClassFromString(@"CLBackgroundActivitySession");
-            if (cls) {
-                _backgroundActivitySession = [[cls alloc] performSelector:@selector(init)];
-                NSLog(@"BackgroundLocator: started CLBackgroundActivitySession");
-            }
+            _backgroundActivitySession = [CLBackgroundActivitySession backgroundActivitySession];
+            NSLog(@"BackgroundLocator: started CLBackgroundActivitySession");
         }
     }
 
@@ -272,7 +269,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
     if (@available(iOS 17.0, *)) {
         if (_backgroundActivitySession != nil) {
-            [_backgroundActivitySession performSelector:@selector(invalidate)];
+            [(CLBackgroundActivitySession *)_backgroundActivitySession invalidate];
             _backgroundActivitySession = nil;
             NSLog(@"BackgroundLocator: invalidated CLBackgroundActivitySession");
         }
