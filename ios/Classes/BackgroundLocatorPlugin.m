@@ -13,6 +13,7 @@
     NSObject<FlutterPluginRegistrar> *_registrar;
     CLLocationManager *_locationManager;
     CLLocation* _lastLocation;
+    id _backgroundActivitySession; // CLBackgroundActivitySession (iOS 17+)
 }
 
 static FlutterPluginRegistrantCallback registerPlugins = nil;
@@ -152,6 +153,9 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     _locationManager = [[CLLocationManager alloc] init];
     [_locationManager setDelegate:self];
     _locationManager.pausesLocationUpdatesAutomatically = NO;
+    if (@available(iOS 12.0, *)) {
+        _locationManager.activityType = CLActivityTypeAirborne;
+    }
 }
 
 #pragma mark MethodCallHelperDelegate
@@ -236,8 +240,14 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     DisposePluggable *disposePluggable = [[DisposePluggable alloc] init];
     [disposePluggable setCallback:disposeCallback];
         
+    if (@available(iOS 17.0, *)) {
+        if (_backgroundActivitySession == nil) {
+            _backgroundActivitySession = [CLBackgroundActivitySession new];
+            NSLog(@"BackgroundLocator: started CLBackgroundActivitySession");
+        }
+    }
+
     [_locationManager startUpdatingLocation];
-    [_locationManager startMonitoringSignificantLocationChanges];
 }
 
 - (void)removeLocator {
@@ -252,10 +262,16 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
             _locationManager.allowsBackgroundLocationUpdates = NO;
         }
         
-        [_locationManager stopMonitoringSignificantLocationChanges];
-
         for (CLRegion* region in [_locationManager monitoredRegions]) {
             [_locationManager stopMonitoringForRegion:region];
+        }
+    }
+
+    if (@available(iOS 17.0, *)) {
+        if (_backgroundActivitySession != nil) {
+            [_backgroundActivitySession invalidate];
+            _backgroundActivitySession = nil;
+            NSLog(@"BackgroundLocator: invalidated CLBackgroundActivitySession");
         }
     }
     
