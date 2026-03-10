@@ -82,6 +82,12 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
 
 -(void)applicationWillTerminate:(UIApplication *)application {
     [self observeRegionForLocation:_lastLocation];
+    if (@available(iOS 17.0, *)) {
+        if (_backgroundActivitySession != nil) {
+            [(CLBackgroundActivitySession *)_backgroundActivitySession invalidate];
+            _backgroundActivitySession = nil;
+        }
+    }
     if([PreferencesManager isStopWithTerminate]){
         [self removeLocator];
     }
